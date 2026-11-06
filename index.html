@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>聖誕禮物大收集｜數量增多與減少</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #000000;
+      --text: #ffffff;
+      --yellow: #ffe600;
+      --cyan: #4de8ff;
+      --button: #087cff;
+      --button-active: #0054c8;
+      --muted: #d7e6f2;
+      --panel: #111820;
+      --focus: #fff200;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "PingFang HK", "Noto Sans HK", sans-serif;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior: none;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    [hidden] { display: none !important; }
+
+    .app {
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      gap: 8px;
+    }
+
+    .topbar {
+      flex: 0 0 auto;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .app-title {
+      margin: 0;
+      color: var(--yellow);
+      font-size: clamp(25px, 3.2vw, 36px);
+      line-height: 1.12;
+      font-weight: 900;
+      letter-spacing: .02em;
+    }
+
+    .settings-open {
+      flex: 0 0 auto;
+      min-width: 116px;
+      min-height: 48px;
+      border: 2px solid #ffffff;
+      border-radius: 14px;
+      background: #202832;
+      color: #ffffff;
+      font-size: 19px;
+      font-weight: 800;
+      padding: 8px 13px;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .game-view, .settings-view {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+
+    .intro-panel, .done-panel, .settings-panel {
+      width: min(900px, 100%);
+      margin: auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 18px 10px 24px;
+    }
+
+    .intro-title, .settings-title, .done-title {
+      margin: 0;
+      color: var(--cyan);
+      font-size: clamp(30px, 4.5vw, 48px);
+      line-height: 1.18;
+      font-weight: 900;
+    }
+
+    .intro-copy, .settings-copy, .done-copy {
+      margin: 0;
+      max-width: 800px;
+      color: #ffffff;
+      font-size: clamp(22px, 2.8vw, 30px);
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .intro-note {
+      color: var(--yellow);
+      font-size: clamp(19px, 2.4vw, 25px);
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    .task-heading {
+      flex: 0 0 auto;
+      width: 100%;
+      text-align: center;
+      color: var(--cyan);
+      font-size: clamp(25px, 3.4vw, 38px);
+      line-height: 1.2;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .task-instruction {
+      flex: 0 0 auto;
+      width: 100%;
+      text-align: center;
+      margin: 0;
+      color: #ffffff;
+      font-size: clamp(18px, 2.3vw, 25px);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .counter-row {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      min-height: 76px;
+      padding: 2px 0;
+    }
+
+    .counter-number {
+      color: var(--yellow);
+      font-size: clamp(54px, 7.5vh, 82px);
+      line-height: .95;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 12px rgba(255, 230, 0, .28);
+    }
+
+    .counter-label {
+      color: #ffffff;
+      font-size: clamp(23px, 3vw, 32px);
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .progress-label {
+      color: var(--muted);
+      font-size: clamp(16px, 2vw, 21px);
+      font-weight: 700;
+    }
+
+    .gift-grid {
+      flex: 1 1 auto;
+      min-height: 100px;
+      width: min(1200px, 100%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: clamp(148px, 22vh, 230px);
+      align-content: center;
+      justify-items: center;
+      align-items: center;
+      gap: clamp(4px, 1vh, 12px) clamp(6px, 1.6vw, 20px);
+      padding: 2px 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #4de8ff #111111;
+    }
+
+    .gift-item {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: gift-pop .22s ease-out both;
+    }
+
+    .gift-item svg {
+      display: block;
+      width: min(100%, 232px);
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 3px 5px rgba(255,255,255,.22));
+    }
+
+    .empty-note {
+      grid-column: 1 / -1;
+      align-self: center;
+      justify-self: center;
+      max-width: 90%;
+      text-align: center;
+      color: #ffffff;
+      font-size: clamp(22px, 3vw, 32px);
+      line-height: 1.4;
+      font-weight: 800;
+      padding: 24px 10px;
+    }
+
+    .action-area {
+      flex: 0 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding-top: 2px;
+    }
+
+    .action-button, .primary-button {
+      width: min(650px, 96%);
+      min-height: 76px;
+      border: 3px solid #ffffff;
+      border-radius: 18px;
+      background: var(--button);
+      color: #ffffff;
+      font-size: clamp(25px, 3.2vw, 34px);
+      line-height: 1.15;
+      font-weight: 900;
+      padding: 13px 18px;
+      box-shadow: 0 5px 0 #003b91;
+    }
+
+    .action-button:active, .primary-button:active {
+      transform: translateY(2px);
+      background: var(--button-active);
+      box-shadow: 0 3px 0 #003b91;
+    }
+
+    .action-button:disabled {
+      background: #34485a;
+      color: #d3dce5;
+      border-color: #aebbc8;
+      box-shadow: none;
+      opacity: 1;
+    }
+
+    .key-hint {
+      margin: 0;
+      color: var(--yellow);
+      text-align: center;
+      font-size: clamp(16px, 2vw, 20px);
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .keycap {
+      display: inline-block;
+      min-width: 76px;
+      border: 2px solid #ffffff;
+      border-bottom-width: 5px;
+      border-radius: 8px;
+      padding: 1px 9px 3px;
+      color: #ffffff;
+      background: #222b35;
+      font-size: .9em;
+      text-align: center;
+    }
+
+    .settings-panel {
+      gap: 22px;
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(16px, 4vw, 34px);
+      width: 100%;
+    }
+
+    .stepper-button {
+      flex: 0 0 auto;
+      width: 76px;
+      height: 76px;
+      border: 3px solid #ffffff;
+      border-radius: 16px;
+      background: #243546;
+      color: #ffffff;
+      font-size: 46px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .quantity-value {
+      min-width: 105px;
+      color: var(--yellow);
+      font-size: clamp(64px, 9vh, 90px);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .range-wrap {
+      width: min(680px, 92%);
+      padding: 8px 4px;
+    }
+
+    input[type="range"] {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      margin: 0;
+      accent-color: #ffe600;
+      cursor: pointer;
+    }
+
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .settings-actions {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .settings-actions .primary-button {
+      width: min(420px, 95%);
+      min-height: 68px;
+      font-size: clamp(22px, 2.8vw, 28px);
+    }
+
+    .secondary-button {
+      width: min(250px, 95%);
+      min-height: 68px;
+      border: 2px solid #ffffff;
+      border-radius: 16px;
+      background: #29333e;
+      color: #ffffff;
+      font-size: 23px;
+      font-weight: 800;
+      padding: 10px 16px;
+    }
+
+    .footer-note {
+      flex: 0 0 auto;
+      text-align: center;
+      color: #b9c7d4;
+      font-size: 14px;
+      line-height: 1.25;
+      margin: 0;
+    }
+
+    @keyframes gift-pop {
+      from { transform: scale(.75); opacity: .25; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 900px) {
+      .gift-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .app { padding-left: 10px; padding-right: 10px; gap: 6px; }
+      .topbar { min-height: 48px; }
+      .settings-open { min-width: 100px; min-height: 44px; font-size: 17px; }
+      .gift-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: clamp(140px, 22vh, 210px); }
+      .action-button { min-height: 68px; }
+    }
+
+    @media (max-height: 760px) {
+      .app { gap: 4px; }
+      .topbar { min-height: 44px; }
+      .gift-grid { grid-auto-rows: clamp(140px, 22vh, 190px); gap: 6px 12px; }
+      .counter-row { min-height: 60px; }
+      .action-button { min-height: 62px; }
+      .key-hint { font-size: 15px; }
+      .intro-panel, .done-panel, .settings-panel { gap: 12px; padding-top: 8px; padding-bottom: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1 class="app-title">🎄 聖誕禮物大收集</h1>
+      <button class="settings-open" id="openSettings" type="button" aria-label="開啟教師設定">⚙ 教師設定</button>
+    </header>
+
+    <main class="game-view" id="gameView">
+      <section class="intro-panel" id="introPanel">
+        <h2 class="intro-title">聖誕禮物遊戲</h2>
+        <p class="intro-note" id="introQuantity">設定數量：5 份</p>
+        <button class="primary-button" id="startButton" type="button">開始</button>
+      </section>
+
+      <section class="play-panel" id="playPanel" hidden style="width:100%; min-height:0; flex:1 1 auto; display:flex; flex-direction:column; align-items:center; gap:7px;">
+        <h2 class="task-heading" id="taskHeading">任務一：收集禮物</h2>
+        <div class="counter-row" aria-live="polite">
+          <span class="counter-number" id="counterNumber">0</span>
+        </div>
+        <div class="gift-grid" id="giftGrid" aria-label="聖誕禮物顯示區"></div>
+        <div class="action-area">
+          <button class="action-button" id="actionButton" type="button" disabled>收集</button>
+          <p class="key-hint">外接按鈕：<span class="keycap">空白鍵</span></p>
+        </div>
+      </section>
+
+      <section class="done-panel" id="donePanel" hidden>
+        <h2 class="done-title">🎉 做得好！</h2>
+        <button class="primary-button" id="restartButton" type="button">再玩一次</button>
+      </section>
+    </main>
+
+    <main class="settings-view" id="settingsView" hidden>
+      <section class="settings-panel">
+        <h2 class="settings-title">教師設定</h2>
+        <p class="settings-copy">請設定學生需要收集及拆開的聖誕禮物數量。</p>
+        <p class="intro-note">禮物數量（1–20 份）</p>
+        <div class="quantity-control">
+          <button class="stepper-button" id="minusButton" type="button" aria-label="減少一份">−</button>
+          <output class="quantity-value" id="quantityValue" for="quantityRange">5</output>
+          <button class="stepper-button" id="plusButton" type="button" aria-label="增加一份">＋</button>
+        </div>
+        <div class="range-wrap">
+          <input id="quantityRange" type="range" min="1" max="20" step="1" value="5" aria-label="設定禮物數量，由一至二十份">
+          <div class="range-labels"><span>1 份</span><span>20 份</span></div>
+        </div>
+        <p class="settings-copy" id="settingsPreview">學生會順數 1–5，再倒數 5–0。</p>
+        <div class="settings-actions">
+          <button class="primary-button" id="saveSettings" type="button">儲存設定並返回</button>
+          <button class="secondary-button" id="cancelSettings" type="button">取消</button>
+        </div>
+      </section>
+    </main>
+
+    <p class="footer-note" id="footerNote">語音：香港廣東話（如裝置支援）｜遊戲毋須連接互聯網</p>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (id) => document.getElementById(id);
+      const palette = [
+        ['#ff355e', '#ffe66d'], ['#00a8ff', '#fff36b'], ['#21c875', '#fff3a1'],
+        ['#ff8b22', '#6be7ff'], ['#bd62ff', '#fff06a'], ['#ff5db1', '#68fff0'],
+        ['#ffe02f', '#ff4a68'], ['#11d6c5', '#ffef69']
+      ];
+
+      let totalGifts = 5;
+      let selectedQuantity = 5;
+      let count = 0;
+      let phase = 'intro'; // intro, collect, open, done
+      let ready = false;
+      let audioContext = null;
+      let speechVoices = [];
+      let settingsReturnPhase = 'intro';
+      let settingsReturnCount = 0;
+
+      const chineseDigits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+
+      function toChineseNumber(number) {
+        if (number < 10) return chineseDigits[number];
+        if (number === 10) return '十';
+        if (number < 20) return '十' + chineseDigits[number - 10];
+        return '二十';
+      }
+
+      function updateVoices() {
+        if ('speechSynthesis' in window) speechVoices = window.speechSynthesis.getVoices() || [];
+      }
+
+      if ('speechSynthesis' in window) {
+        updateVoices();
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+      }
+
+      function speak(text, onDone) {
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          if (typeof onDone === 'function') onDone();
+        };
+
+        if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+          finish();
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const cantoneseVoice = speechVoices.find(v => /^zh-HK/i.test(v.lang))
+          || speechVoices.find(v => /cantonese|hong kong|香港|粵語|粤语/i.test(v.name));
+        if (cantoneseVoice) {
+          utterance.voice = cantoneseVoice;
+          utterance.lang = cantoneseVoice.lang || 'zh-HK';
+        } else {
+          utterance.lang = 'zh-HK';
+        }
+        utterance.rate = 0.84;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        utterance.onend = finish;
+        utterance.onerror = finish;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function playSuccessSound() {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        try {
+          if (!audioContext) audioContext = new AudioCtx();
+          if (audioContext.state === 'suspended') audioContext.resume();
+          const now = audioContext.currentTime;
+          const notes = [659.25, 783.99, 987.77, 1318.51];
+          notes.forEach((frequency, index) => {
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const start = now + index * 0.14;
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, start);
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(0.20, start + 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.30);
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+            oscillator.start(start);
+            oscillator.stop(start + 0.32);
+          });
+        } catch (error) {
+          // 即使裝置不支援音效，廣東話讚賞語音仍會照常播放。
+        }
+      }
+
+      function giftSvg(index) {
+        const [body, ribbon] = palette[index % palette.length];
+        return `
+          <svg viewBox="0 0 120 120" role="img" aria-label="聖誕禮物" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="60" cy="108" rx="43" ry="5" fill="#ffffff" opacity=".18"/>
+            <rect x="19" y="43" width="82" height="61" rx="6" fill="${body}" stroke="#ffffff" stroke-width="3"/>
+            <rect x="13" y="33" width="94" height="19" rx="5" fill="${body}" stroke="#ffffff" stroke-width="3"/>
+            <path d="M54 34 C35 31 31 14 43 12 C53 10 60 25 60 34 C62 21 76 8 85 15 C95 24 79 35 66 35 Z" fill="${ribbon}" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+            <rect x="54" y="34" width="12" height="70" rx="2" fill="${ribbon}" stroke="#ffffff" stroke-width="1.5"/>
+            <rect x="19" y="56" width="82" height="8" fill="${ribbon}" opacity=".96"/>
+            <path d="M20 75 H100" stroke="#ffffff" stroke-width="2" opacity=".28"/>
+          </svg>`;
+      }
+
+      function renderGifts() {
+        const grid = $('giftGrid');
+        const shown = phase === 'collect' ? count : (phase === 'open' ? count : 0);
+        if (shown === 0) {
+          grid.innerHTML = '';
+          grid.setAttribute('aria-label', '目前沒有禮物');
+          return;
+        }
+        let html = '';
+        for (let i = 0; i < shown; i++) {
+          html += `<div class="gift-item">${giftSvg(i)}</div>`;
+        }
+        grid.innerHTML = html;
+        grid.setAttribute('aria-label', `畫面上有 ${shown} 份聖誕禮物`);
+      }
+
+      function render() {
+        $('introPanel').hidden = phase !== 'intro';
+        $('playPanel').hidden = !(phase === 'collect' || phase === 'open');
+        $('donePanel').hidden = phase !== 'done';
+        $('introQuantity').textContent = `設定數量：${totalGifts} 份`;
+
+        if (phase === 'collect') {
+          $('taskHeading').textContent = '任務一：收集禮物';
+          $('counterNumber').textContent = count;
+          $('actionButton').textContent = '🎁 收集';
+        } else if (phase === 'open') {
+          $('taskHeading').textContent = '任務二：拆禮物';
+          $('counterNumber').textContent = count;
+          $('actionButton').textContent = '✨ 拆開';
+        }
+        $('actionButton').disabled = !ready;
+        renderGifts();
+      }
+
+      function beginCollectTask() {
+        phase = 'collect';
+        count = 0;
+        ready = false;
+        render();
+        speak(
+          '第一個任務，請你拍掣收集禮物，望住熒幕睇下禮物係咪越嚟越多？',
+          () => { ready = true; render(); }
+        );
+      }
+
+      function beginOpenTask() {
+        phase = 'open';
+        count = totalGifts;
+        ready = false;
+        render();
+        speak(
+          '第二個任務，請你拍掣拆禮物，望住熒幕睇下禮物盒係咪越嚟越少？',
+          () => {
+            speak(toChineseNumber(totalGifts), () => {
+              ready = true;
+              render();
+            });
+          }
+        );
+      }
+
+      function finishGame() {
+        ready = false;
+        playSuccessSound();
+        speak('做得好！你完成晒兩個任務喇！', () => {
+          phase = 'done';
+          render();
+        });
+      }
+
+      function handleAction() {
+        if (!ready || (phase !== 'collect' && phase !== 'open')) return;
+        ready = false;
+
+        if (phase === 'collect') {
+          count = Math.min(totalGifts, count + 1);
+          render();
+          speak(toChineseNumber(count), () => {
+            if (count >= totalGifts) {
+              playSuccessSound();
+              speak(`做得好！你收集晒${toChineseNumber(totalGifts)}份禮物喇！`, beginOpenTask);
+            } else {
+              ready = true;
+              render();
+            }
+          });
+        } else if (phase === 'open') {
+          count = Math.max(0, count - 1);
+          render();
+          speak(toChineseNumber(count), () => {
+            if (count === 0) {
+              finishGame();
+            } else {
+              ready = true;
+              render();
+            }
+          });
+        }
+      }
+
+      function startGame() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        beginCollectTask();
+      }
+
+      function openSettings() {
+        settingsReturnPhase = phase;
+        settingsReturnCount = count;
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        ready = false;
+        $('gameView').hidden = true;
+        $('settingsView').hidden = false;
+        selectedQuantity = totalGifts;
+        updateSettingsUI();
+      }
+
+      function updateSettingsUI() {
+        $('quantityRange').value = selectedQuantity;
+        $('quantityValue').textContent = selectedQuantity;
+        $('settingsPreview').textContent = `學生會順數 1–${selectedQuantity}，再倒數 ${selectedQuantity}–0。`;
+      }
+
+      function closeSettings(save) {
+        if (save) {
+          totalGifts = Math.max(1, Math.min(20, Number(selectedQuantity) || 5));
+          phase = 'intro';
+          count = 0;
+          ready = false;
+        } else {
+          phase = settingsReturnPhase;
+          count = settingsReturnCount;
+        }
+        $('settingsView').hidden = true;
+        $('gameView').hidden = false;
+        render();
+
+        // 如教師在遊戲中途開啟設定後取消，重新提示當前任務，避免學生停在不可操作狀態。
+        if (!save && (phase === 'collect' || phase === 'open')) {
+          ready = false;
+          render();
+          const resumeText = phase === 'collect'
+            ? `繼續第一個任務。你已經收集咗${toChineseNumber(count)}份禮物喇，拍掣繼續收集啦。`
+            : `繼續第二個任務。仲有${toChineseNumber(count)}份禮物未拆，拍掣繼續拆啦。`;
+          speak(resumeText, () => { ready = true; render(); });
+        }
+      }
+
+      $('startButton').addEventListener('click', startGame);
+      $('actionButton').addEventListener('click', handleAction);
+      $('restartButton').addEventListener('click', startGame);
+      $('openSettings').addEventListener('click', openSettings);
+      $('saveSettings').addEventListener('click', () => closeSettings(true));
+      $('cancelSettings').addEventListener('click', () => closeSettings(false));
+      $('quantityRange').addEventListener('input', (event) => {
+        selectedQuantity = Number(event.target.value);
+        updateSettingsUI();
+      });
+      $('minusButton').addEventListener('click', () => {
+        selectedQuantity = Math.max(1, selectedQuantity - 1);
+        updateSettingsUI();
+      });
+      $('plusButton').addEventListener('click', () => {
+        selectedQuantity = Math.min(20, selectedQuantity + 1);
+        updateSettingsUI();
+      });
+
+      // 外接空白鍵按鈕通常會模擬鍵盤 Space；避免長按重複觸發。
+      window.addEventListener('keydown', (event) => {
+        if (event.code !== 'Space' && event.key !== ' ') return;
+        if ($('settingsView').hidden === false) return;
+        if (event.target && /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+        event.preventDefault();
+        if (event.repeat) return;
+        handleAction();
+      }, { passive: false });
+
+      updateSettingsUI();
+      render();
+    })();
+  </script>
+</body>
+</html>
